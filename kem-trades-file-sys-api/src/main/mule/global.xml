@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config
+		name="kem-trades-file-sys-api-httpListenerConfig"
+		basePath="kem-trades-file-sys-api">
+		<http:listener-connection host="0.0.0.0"
+			port="8081" />
+	</http:listener-config>
+	<apikit:config name="kem-trades-file-sys-api-config"
+		api="resource::41e75f12-8bdd-4af7-9da3-a774dd2fe055:kem-trades-file-sys-api:1.0.0:raml:zip:kem-trades-file-sys-api.raml"
+		outboundHeadersMapName="outboundHeaders"
+		httpStatusVarName="httpStatus" />
+	<configuration doc:name="Configuration"
+		doc:id="918bad25-8a3a-43b6-abda-e8464c1f32cc"
+		defaultErrorHandler-ref="globalError_Handler" />
+	<configuration-properties doc:name="Configuration properties" doc:id="bfaf33ab-67b7-4fd4-9009-5996b3dc2348" file="config/${env}.properties" />
+	<error-handler name="globalError_Handler"
+		doc:id="7d8bfc6e-f249-47a0-8fbd-eae0073d5d7d">
+		<on-error-propagate enableNotifications="true"
+			logException="true" doc:name="On Error Propagate"
+			doc:id="a2b4e9d1-501d-4ab7-9012-84b78fec330c">
+			<ee:transform doc:name="error message"
+				doc:id="382c87f6-1577-4880-9272-307bfcf85975">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "an error has occurred",
+	error:{
+		description:  error.description,
+		errorType: error.errorType.asString
+		
+	}
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+</mule>
